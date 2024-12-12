@@ -8,13 +8,6 @@ const seed = require('./db/seedFn');
 const {dogs} = require('./db/seedData');
 
 describe('Endpoints', () => {
-    // to be used in POST test
-    const testDogData = {
-        breed: 'Poodle',
-        name: 'Sasha',
-        color: 'black',
-        description: 'Sasha is a beautiful black pooodle mix.  She is a great companion for her family.'
-    };
 
     beforeAll(async () => {
         // rebuild db before the test suite runs
@@ -33,4 +26,53 @@ describe('Endpoints', () => {
             expect(response.body[0]).toEqual(expect.objectContaining(dogs[0]));
         });
     });
+
+    describe('POST /dogs', () => {
+            const testDogData = {
+                breed: 'Poodle',
+                name: 'Sasha',
+                color: 'black',
+                description: 'Sasha is a beautiful black pooodle mix.  She is a great companion for her family.'
+            };
+
+            it('should create a new dog', async () => {
+                // make a request
+                const response = await request(app).post('/dogs').send(testDogData);
+                // assert a response code
+                expect(response.status).toBe(201);
+                // expect a response
+                expect(response.body).toBeDefined();
+                // toEqual checks deep equality in objects
+                expect(response.body.name).toBe('Sasha');
+            });
+
+
+            it('should return correct dog based on id from response', async () => {
+                const response = await request(app).post('/dogs').send(testDogData);
+                const dogId = await response.body.id;
+                const foundDog = await Dog.findByPk(dogId);
+                expect(foundDog).toEqual(expect.objectContaining(testDogData));
+            });
+
+    });
+
+    describe('DELETE /dogs/:id', () => {
+
+        it('should delete a dog', async () => {
+            const response = await request(app).delete('/dogs/1');
+            expect(response.status).toBe(200);
+        });
+
+        it('should remove dog from database', async () => {
+            await request(app).delete('/dogs/1');
+            const allDogs = await Dog.findAll({where: {id : 1}});
+            expect(allDogs).toEqual([]);
+            expect(allDogs).toHaveLength(0);
+        });
+
+    });
+
+
+
+
 });

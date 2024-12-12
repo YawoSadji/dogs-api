@@ -12,7 +12,7 @@ app.post('/dogs', async (req, res, next) => {
   try {
     const {name, breed, color, description} = req.body;
     const dog = await Dog.create({name, breed, color, description});
-    res.send(dog);
+    res.status(201).send(dog);//modifying code to return 201 if dog is created.
   } catch (error) {
     next(error);
   }
